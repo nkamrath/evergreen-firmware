@@ -1,0 +1,1 @@
+../lib/esp32-update-manager/src/update_manager.h

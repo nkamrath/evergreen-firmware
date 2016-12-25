@@ -1,0 +1,3 @@
+[submodule "src/lib/esp32-update-manager"]
+	path = src/lib/esp32-update-manager
+	url = https://github.com/nkamrath/esp32-update-manager.git
