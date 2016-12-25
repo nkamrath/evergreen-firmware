@@ -92,12 +92,12 @@ void app_init(void *pvParameter)
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true, portMAX_DELAY);
     ESP_LOGI(TAG, "Connected to AP");
 
-    UpdateManager_Create();
+    UpdateManager_Create(NULL);
     udp_multicast_init();
     uint8_t loop_counter = 0;
     bool last_motion_sensor_state = false;
     //udp_broadcast(50008, (uint8_t*)"START", 5);
-    printf("\r\nNEW FIRMWARE 4!!!!!!!!!!!!\r\n");
+    printf("\r\nNEW FIRMWARE 5!!!!!!!!!!!!\r\n");
     while(1)
     {
         if(loop_counter == 9)
