@@ -97,7 +97,7 @@ void app_init(void *pvParameter)
     uint8_t loop_counter = 0;
     bool last_motion_sensor_state = false;
     //udp_broadcast(50008, (uint8_t*)"START", 5);
-    printf("\r\nNEW FIRMWARE 5!!!!!!!!!!!!\r\n");
+    printf("\r\nNEW FIRMWARE 4!!!!!!!!!!!!\r\n");
     while(1)
     {
         if(loop_counter == 9)

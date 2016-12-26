@@ -52,21 +52,43 @@ def bytes(int32):
 	ret += chr((int32>>24) & 0xff)
 	return ret
 
-def trySend(socket, address, data, timeout=1):
+#make a 32 bit in from bytes
+def int32FromBytes(bytes):
+	val = 0
+	if(len(bytes) == 4):
+		val |= (ord(bytes[0])) & 0xff
+		val |= ((ord(bytes[1]) & 0xff) <<8)
+		val |= ((ord(bytes[2]) & 0xff) <<16)
+		val |= ((ord(bytes[3]) & 0xff) <<24)
+	return val
+
+def trySend(socket, address, data, sequenceNumber, timeout=1):
 	gotResponse = False
 	retries = 0
 	#set socket timeout
 	updateSocket.settimeout(timeout)
-	while(gotResponse == False and retries < 3):
+	lastReplyOld = False
+	while(gotResponse == False and retries < 5):
 		try:
-			socket.sendto(data, address)
+			if lastReplyOld == False:
+				socket.sendto(data, address)
 			reply, fromAddr = updateSocket.recvfrom(100)
 			if fromAddr == address:
-				return reply
+				if(len(reply) >= 6):
+					seqNumCheck = int32FromBytes(reply[2:])
+					#print sequenceNumber #this left in because it can be helpful debug to see if we are losing step with client a lot
+					if(seqNumCheck == sequenceNumber):
+						return reply
+					else:
+						lastReplyOld = True
+						retries += 1
+				else:
+					return reply
 			else:
 				retries+=1
 				print "try send retry..."
 		except:
+			lastReplyOld = False
 			retries +=1
 	return "ERROR"
 
@@ -99,7 +121,7 @@ else:
 	imageMetadata += bytes(numPacketsRequired)
 
 	#updateSocket.sendto(imageMetadata, (deviceIp, UPDATE_PORT))
-	trySend(updateSocket, (deviceIp, UPDATE_PORT), imageMetadata)
+	trySend(updateSocket, (deviceIp, UPDATE_PORT), imageMetadata, 0, 5)
 
 	#now we need to build the individual firmware update packets
 	print ("Beginning update...\r\n")
@@ -110,7 +132,7 @@ else:
 		updateData += bytes(MAX_CHUNK_SIZE)
 		updateData += imageFile[imageIndex:(imageIndex+MAX_CHUNK_SIZE)]
 		imageIndex += MAX_CHUNK_SIZE
-		if(trySend(updateSocket, (deviceIp, UPDATE_PORT), updateData) == "ERROR"):
+		if(trySend(updateSocket, (deviceIp, UPDATE_PORT), updateData, x+1) == "ERROR"):
 			exit(0);
 
 		#progress(x, numPacketsRequired);
@@ -120,6 +142,6 @@ else:
 	updateData += bytes(numPacketsRequired)
 	updateData += bytes(lastChunkSize)
 	updateData += imageFile[imageIndex:(imageIndex+lastChunkSize)]
-	trySend(updateSocket, (deviceIp, UPDATE_PORT), updateData)
+	trySend(updateSocket, (deviceIp, UPDATE_PORT), updateData, numPacketsRequired)
 	#progress(numPacketsRequired, numPacketsRequired);
 	printProgress(numPacketsRequired, numPacketsRequired, prefix = 'Progress', suffix = 'Done\r\n', barLength = 50)
