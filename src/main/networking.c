@@ -63,6 +63,7 @@ void udp_service_socket(void)
 		{
 			printf("Got udp packet from: %s:%d\r\n", inet_ntoa(remote_addr.sin_addr), ntohs(remote_addr.sin_port));
 			printf("data: %s\r\n", _rx_buffer);
+			_rx_buffer[rcv_len] = '\0';
 
 			if(memcmp("light on", _rx_buffer, 8) == 0)
 			{
