@@ -25,7 +25,7 @@
 //debug output leds pins
 
 
-#define DEBUG_PIN1					5ULL
+#define DEBUG_PIN1					4ULL
 #define DEBUG_PIN1_MASK				(1ULL<<DEBUG_PIN1)
 #define DEBUG_PIN1_CONFIG		{					\
 	.intr_type = GPIO_INTR_DISABLE,					\

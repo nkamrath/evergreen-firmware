@@ -97,7 +97,7 @@ void app_init(void *pvParameter)
     uint8_t loop_counter = 0;
     bool last_motion_sensor_state = false;
     //udp_broadcast(50008, (uint8_t*)"START", 5);
-    printf("\r\nNEW FIRMWARE 4!!!!!!!!!!!!\r\n");
+    printf("\r\nNEW FIRMWARE 5!!!!!!!!!!!!\r\n");
     while(1)
     {
         if(loop_counter == 9)
@@ -153,13 +153,13 @@ void app_main(void)
 
 
     Pin_ClearOutput(DEBUG_PIN1_MASK | DEBUG_PIN2_MASK | DEBUG_PIN3_MASK);
-    Pin_SetOutput(DEBUG_PIN1_MASK);
 
 
     xTaskCreate(&app_init, "app_init", 4096, NULL, 5, NULL);
 
     while(1)
     {
+        Pin_ClearOutput(DEBUG_PIN1_MASK | DEBUG_PIN2_MASK | DEBUG_PIN3_MASK);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 

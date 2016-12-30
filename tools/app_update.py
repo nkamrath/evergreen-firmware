@@ -7,6 +7,9 @@ import time
 UPDATE_PORT = 54322
 MAX_CHUNK_SIZE = 1024
 
+UPDATE_PACKET_TYPE_META_DATA = 0
+UPDATE_PACKET_TYPE_IMAGE_DATA = 1
+
 updateSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 #updateSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 updateSocket.bind(('', UPDATE_PORT))
@@ -112,13 +115,19 @@ else:
 	else:
 		lastChunkSize = MAX_CHUNK_SIZE;
 
-	imageMetadata = "UPDM" #update metadata
+	imageMetadata = "UPD8" #update metadata
 	#build 0 sequence number
 	imageMetadata += bytes(0)
+	#packet type
+	imageMetadata += bytes(UPDATE_PACKET_TYPE_META_DATA)
+	#payload length
+	imageMetadata += bytes(12)
 	#build image size in bytes
 	imageMetadata += bytes(len(imageFile))
 	#build num packets
 	imageMetadata += bytes(numPacketsRequired)
+	#image checksum UNUSED
+	imageMetadata += bytes(0)
 
 	#updateSocket.sendto(imageMetadata, (deviceIp, UPDATE_PORT))
 	trySend(updateSocket, (deviceIp, UPDATE_PORT), imageMetadata, 0, 5)
@@ -127,10 +136,12 @@ else:
 	print ("Beginning update...\r\n")
 	imageIndex = 0
 	for x in range(0, numPacketsRequired-1):#numPacketsRequired-1):
-		updateData = "UPDD" #update data
-		updateData += bytes(x+1)
-		updateData += bytes(MAX_CHUNK_SIZE)
-		updateData += imageFile[imageIndex:(imageIndex+MAX_CHUNK_SIZE)]
+		updateData = "UPD8" #update data
+		updateData += bytes(x+1) #sequence number
+		updateData += bytes(UPDATE_PACKET_TYPE_IMAGE_DATA) #packet type
+		updateData += bytes(MAX_CHUNK_SIZE + 4) #payload length
+		updateData += bytes(MAX_CHUNK_SIZE) #image chunk size
+		updateData += imageFile[imageIndex:(imageIndex+MAX_CHUNK_SIZE)] #image data
 		imageIndex += MAX_CHUNK_SIZE
 		if(trySend(updateSocket, (deviceIp, UPDATE_PORT), updateData, x+1) == "ERROR"):
 			exit(0);
@@ -138,8 +149,10 @@ else:
 		#progress(x, numPacketsRequired);
 		printProgress(x, numPacketsRequired, prefix = 'Progress', suffix = 'Done', barLength = 50)
 
-	updateData = "UPDD" #update data
+	updateData = "UPD8" #update data
 	updateData += bytes(numPacketsRequired)
+	updateData += bytes(UPDATE_PACKET_TYPE_IMAGE_DATA) #packet type
+	updateData += bytes(lastChunkSize + 4) #payload length
 	updateData += bytes(lastChunkSize)
 	updateData += imageFile[imageIndex:(imageIndex+lastChunkSize)]
 	trySend(updateSocket, (deviceIp, UPDATE_PORT), updateData, numPacketsRequired)
