@@ -13,8 +13,7 @@
 #include <stdint.h>
 #include <string.h>
 
-void udp_multicast_init(void);
-void udp_broadcast(uint16_t port, uint8_t* buffer, uint16_t buffer_length);
-void udp_service_socket(void);
+bool NetworkManager_Create(void);
+bool NetworkManager_Beacon(void);
 
 #endif

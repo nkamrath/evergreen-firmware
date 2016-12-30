@@ -58,6 +58,11 @@ void LightController_Off(void)
 	LightController_Refresh();
 }
 
+bool LightController_GetState(void)
+{
+	return light_state;
+}
+
 void LightController_MotionTriggerOn(void)
 {
 	motion_trigger_on = true;
@@ -70,9 +75,19 @@ void LightController_MotionTriggerOff(void)
 	LightController_Refresh();
 }
 
+bool LightController_GetMotionTriggerState(void)
+{
+	return motion_trigger_on;
+}
+
 void LightController_SetMotionOnTime(uint32_t seconds)
 {
 	motion_trigger_on_time_ticks = seconds * portTICK_RATE_MS * 1000;
+}
+
+uint32_t LightController_GetMotionOnTime(void)
+{
+	return (motion_trigger_on_time_ticks / (portTICK_RATE_MS * 1000));
 }
 
 void LightController_MotionDetected(void)

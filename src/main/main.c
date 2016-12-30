@@ -92,34 +92,32 @@ void app_init(void *pvParameter)
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true, portMAX_DELAY);
     ESP_LOGI(TAG, "Connected to AP");
 
+    NetworkManager_Create();
     UpdateManager_Create(NULL);
-    udp_multicast_init();
-    uint8_t loop_counter = 0;
-    bool last_motion_sensor_state = false;
-    //udp_broadcast(50008, (uint8_t*)"START", 5);
+
+    uint8_t loopCounter = 0;
+
     printf("\r\nNEW FIRMWARE 5!!!!!!!!!!!!\r\n");
     while(1)
     {
-        if(loop_counter == 9)
+        vTaskDelay(10 / portTICK_RATE_MS);
+
+        if(loopCounter == 99)
         {
-            ESP_LOGI(TAG, "Broadcasting...");
-            udp_broadcast(50007, (uint8_t*)BROADCAST_DATA, strlen(BROADCAST_DATA));
-            loop_counter = 0;
+            loopCounter = 0;
+            NetworkManager_Beacon();
         }
-        else
+        else 
         {
-            loop_counter++;
+            loopCounter++;
         }
 
-        udp_service_socket();
-        vTaskDelay(100 / portTICK_RATE_MS);
         bool current_motion_sensor_state = Pin_ReadInput(MOTION_SENSOR_PIN_MASK);
-        if(last_motion_sensor_state == false && current_motion_sensor_state == true)
+        if(current_motion_sensor_state == true)
         {
             printf("motion detected\r\n");
             LightController_MotionDetected();
         }
-        last_motion_sensor_state = current_motion_sensor_state;
         LightController_Refresh();
     }
 
